@@ -1,7 +1,8 @@
-package com.plcoding.doodlekong
+package ru.mkirilkin.doodlekong
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.mkirilkin.doodlekong.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.plcoding.doodlekong
+package ru.mkirilkin.doodlekong
 
 import org.junit.Test
 
