@@ -9,6 +9,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import ru.mkirilkin.doodlekong.data.remote.api.SetupApi
+import ru.mkirilkin.doodlekong.util.Constants
 import ru.mkirilkin.doodlekong.util.DispatcherProvider
 import javax.inject.Singleton
 
@@ -43,5 +47,19 @@ object AppModule {
             override val default: CoroutineDispatcher
                 get() = Dispatchers.Default
         }
+    }
+
+    @Singleton
+    @Provides
+    fun provideSetupApi(okHttpClient: OkHttpClient): SetupApi {
+        return Retrofit.Builder()
+            .baseUrl(
+                if (Constants.USE_LOCALHOST) Constants.HTTP_BASE_URL_LOCALHOST
+                else Constants.HTTP_BASE_URL
+            )
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create(SetupApi::class.java)
     }
 }
