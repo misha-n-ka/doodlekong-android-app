@@ -14,6 +14,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.mkirilkin.doodlekong.data.remote.api.SetupApi
+import ru.mkirilkin.doodlekong.repository.DefaultSetupRepository
+import ru.mkirilkin.doodlekong.repository.SetupRepository
 import ru.mkirilkin.doodlekong.util.Constants
 import ru.mkirilkin.doodlekong.util.DispatcherProvider
 import javax.inject.Singleton
@@ -21,6 +23,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideSetupRepository(
+        setupApi: SetupApi,
+        @ApplicationContext context: Context
+    ): SetupRepository = DefaultSetupRepository(setupApi, context)
 
     @Singleton
     @Provides
