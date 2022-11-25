@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/usernameFragment"
-        android:name="ru.mkirilkin.doodlekong.ui.setup.fragments.UsernameFragment"
+        android:name="ru.mkirilkin.doodlekong.ui.setup.set_username.UsernameFragment"
         android:label="UsernameFragment" >
         <action
             android:id="@+id/action_usernameFragment_to_selectRoomFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
         android:id="@+id/selectRoomFragment"
-        android:name="ru.mkirilkin.doodlekong.ui.setup.fragments.SelectRoomFragment"
+        android:name="ru.mkirilkin.doodlekong.ui.setup.select_room.SelectRoomFragment"
         android:label="SelectRoomFragment" >
         <action
             android:id="@+id/action_selectRoomFragment_to_createRoomFragment"
@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/createRoomFragment"
-        android:name="ru.mkirilkin.doodlekong.ui.setup.fragments.CreateRoomFragment"
+        android:name="ru.mkirilkin.doodlekong.ui.setup.create_room.CreateRoomFragment"
         android:label="CreateRoomFragment" >
         <action
             android:id="@+id/action_createRoomFragment_to_drawingActivity"
