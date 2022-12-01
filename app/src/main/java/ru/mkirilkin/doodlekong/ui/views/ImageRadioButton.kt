@@ -45,7 +45,7 @@ class ImageRadioButton @JvmOverloads constructor(
                     paddingLeft,
                     paddingTop,
                     viewWidth - paddingRight,
-                    height - paddingBottom
+                    viewHeight - paddingBottom
                 )
                 uncheckedDrawable?.draw(canvas)
             } else {
