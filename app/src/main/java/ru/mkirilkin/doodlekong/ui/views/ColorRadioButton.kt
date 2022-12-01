@@ -51,10 +51,9 @@ class ColorRadioButton @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
-        canvas?.drawCircle(viewWidth / 2f, viewHeight / 2f, radius, buttonPaint)
+        canvas?.drawCircle(viewWidth / 2f, viewHeight / 2f, radius * 0.9f, buttonPaint)
         if (isChecked) {
-            canvas?.drawCircle(viewWidth / 2f, viewHeight / 2f, radius * 1.1f, selectionPaint)
+            canvas?.drawCircle(viewWidth / 2f, viewHeight / 2f, radius, selectionPaint)
         }
     }
 }
