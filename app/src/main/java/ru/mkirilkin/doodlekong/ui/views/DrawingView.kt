@@ -75,7 +75,7 @@ class DrawingView @JvmOverloads constructor(
         return true
     }
 
-    fun setPathDatachangedListener(listener: (Stack<PathData>) -> Unit) {
+    fun setPathDataChangedListener(listener: (Stack<PathData>) -> Unit) {
         pathDataChangedListener = listener
     }
 
