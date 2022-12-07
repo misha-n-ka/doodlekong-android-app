@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.repository.SetupRepository
 import ru.mkirilkin.doodlekong.util.Constants.MAX_ROOM_NAME_LENGTH
 import ru.mkirilkin.doodlekong.util.Constants.MIN_ROOM_NAME_LENGTH

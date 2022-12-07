@@ -6,7 +6,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 import ru.mkirilkin.doodlekong.data.remote.responses.BasicApiResponse
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 
 interface SetupApi {
 
