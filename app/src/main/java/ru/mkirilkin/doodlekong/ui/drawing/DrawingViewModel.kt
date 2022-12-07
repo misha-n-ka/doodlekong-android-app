@@ -6,6 +6,7 @@ import com.mkirilkin.doodlekong.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import ru.mkirilkin.doodlekong.data.remote.websocket.DrawingApi
 import ru.mkirilkin.doodlekong.util.DispatcherProvider
 import javax.inject.Inject
 
@@ -13,6 +14,7 @@ import javax.inject.Inject
 class DrawingViewModel @Inject constructor(
     private val dispatchers: DispatcherProvider,
     private val gson: Gson,
+    private val drawingApi: DrawingApi
 ) : ViewModel() {
 
     private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
