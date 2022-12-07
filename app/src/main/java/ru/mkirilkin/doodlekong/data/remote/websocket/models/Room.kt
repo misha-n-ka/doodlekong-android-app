@@ -1,4 +1,4 @@
-package ru.mkirilkin.doodlekong.data.remote.websocket
+package ru.mkirilkin.doodlekong.data.remote.websocket.models
 
 data class Room(
     val name: String,

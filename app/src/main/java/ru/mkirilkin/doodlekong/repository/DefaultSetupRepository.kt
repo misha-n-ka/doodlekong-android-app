@@ -4,7 +4,7 @@ import android.content.Context
 import com.mkirilkin.doodlekong.R
 import retrofit2.HttpException
 import ru.mkirilkin.doodlekong.data.remote.api.SetupApi
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.util.Resource
 import ru.mkirilkin.doodlekong.util.checkForInternetConnection
 import java.io.IOException

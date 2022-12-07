@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mkirilkin.doodlekong.databinding.ItemRoomBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import javax.inject.Inject
 
 class RoomsAdapter @Inject constructor() :

@@ -14,7 +14,7 @@ import androidx.navigation.fragment.navArgs
 import com.mkirilkin.doodlekong.R
 import com.mkirilkin.doodlekong.databinding.FragmentCreateRoomBinding
 import dagger.hilt.android.AndroidEntryPoint
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.util.Constants
 import ru.mkirilkin.doodlekong.util.navigateSafely
 import ru.mkirilkin.doodlekong.util.snackbar

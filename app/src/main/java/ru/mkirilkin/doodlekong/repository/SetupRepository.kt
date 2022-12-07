@@ -1,6 +1,6 @@
 package ru.mkirilkin.doodlekong.repository
 
-import ru.mkirilkin.doodlekong.data.remote.websocket.Room
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.util.Resource
 
 interface SetupRepository {
