@@ -121,7 +121,7 @@ object AppModule {
             .lifecycle(AndroidLifecycle.ofApplicationForeground(app))
             .webSocketFactory(
                 okkHttpClient.newWebSocketFactory(
-                    if (USE_LOCALHOST) WEBSOCKET_BASE_URL else WEBSOCKET_BASE_URL_LOCALHOST
+                    if (USE_LOCALHOST) WEBSOCKET_BASE_URL_LOCALHOST else WEBSOCKET_BASE_URL
                 )
             )
             .addStreamAdapterFactory(FlowStreamAdapter.Factory)
