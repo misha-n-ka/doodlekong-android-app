@@ -41,17 +41,42 @@ class DrawingViewModel @Inject constructor(
     private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
+    private val _connectionProgressBarVisible = MutableStateFlow(true)
+    val connectionProgressBarVisible: StateFlow<Boolean> = _connectionProgressBarVisible
+
+    private val _chooseWordOverlayVisible = MutableStateFlow(false)
+    val chooseWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
+
     private val connectionEventChannel = Channel<WebSocket.Event>()
     val connectionEvent = connectionEventChannel.receiveAsFlow().flowOn(dispatchers.io)
 
     private val socketEventChannel = Channel<SocketEvent>()
-    val socketEvent = connectionEventChannel.receiveAsFlow().flowOn(dispatchers.io)
+    val socketEvent = socketEventChannel.receiveAsFlow().flowOn(dispatchers.io)
+
+    init {
+        observeBaseModels()
+        observeEvents()
+    }
 
     fun checkRadioButton(id: Int) {
         _selectedColorButtonId.value = id
     }
 
-    fun observeEvents() {
+    fun sendBaseModel(data: BaseModel) {
+        viewModelScope.launch(dispatchers.io) {
+            drawingApi.sendBaseModel(data)
+        }
+    }
+
+    fun setChooseWordOverlayVisible(isVisible: Boolean) {
+        _chooseWordOverlayVisible.value = isVisible
+    }
+
+    fun setConnectionProgressBarVisible(isVisible: Boolean) {
+        _connectionProgressBarVisible.value = isVisible
+    }
+
+    private fun observeEvents() {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.observeEvents().collect { event ->
                 connectionEventChannel.send(event)
@@ -59,7 +84,7 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
-    fun observeBaseModels() {
+    private fun observeBaseModels() {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.observeBaseModels().collect { data ->
                 when (data) {
@@ -71,15 +96,10 @@ class DrawingViewModel @Inject constructor(
                             ACTION_UNDO -> socketEventChannel.send(SocketEvent.UndoEvent)
                         }
                     }
+                    is GameError -> socketEventChannel.send(SocketEvent.GameErrorEvent(data))
                     is Ping -> sendBaseModel(Ping())
                 }
             }
-        }
-    }
-
-    fun sendBaseModel(data: BaseModel) {
-        viewModelScope.launch(dispatchers.io) {
-            drawingApi.sendBaseModel(data)
         }
     }
 }
