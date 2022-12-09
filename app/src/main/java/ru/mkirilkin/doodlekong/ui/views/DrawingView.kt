@@ -14,14 +14,22 @@ class DrawingView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
+    var roomName: String? = null
+
+    var isUserDrawing = false
+        set(value) {
+            isEnabled = value
+            field = value
+        }
+
     private var viewWidth: Int? = null
     private var viewHeight: Int? = null
     private var bitmap: Bitmap? = null
     private var canvas: Canvas? = null
     private var curX: Float? = null
     private var curY: Float? = null
-    var smoothness = 5
-    var isDrawing = false
+    private var smoothness = 5
+    private var isDrawing = false
 
     private var paint = Paint(Paint.DITHER_FLAG).apply {
         isDither = true
@@ -121,6 +129,26 @@ class DrawingView @JvmOverloads constructor(
         }
         path = Path()
         invalidate()
+    }
+
+    private fun createDrawData(
+        fromX: Float,
+        fromY: Float,
+        toX: Float,
+        toY: Float,
+        motionEvent: Int
+    ): DrawData {
+        return DrawData(
+            roomName = roomName
+                ?: throw IllegalStateException("Must set the roomName in drawing view"),
+            color = paint.color,
+            thickness = paint.strokeWidth,
+            fromX = fromX / viewWidth!!,
+            fromY = fromY / viewHeight!!,
+            toX = toX / viewWidth!!,
+            toY = toY / viewHeight!!,
+            motionEvent = motionEvent
+        )
     }
 
     data class PathData(val path: Path, val color: Int, val thickness: Float)
