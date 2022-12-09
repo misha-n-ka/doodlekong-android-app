@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawData
 import ru.mkirilkin.doodlekong.util.Constants
 import java.util.*
 import kotlin.math.abs
@@ -44,6 +45,8 @@ class DrawingView @JvmOverloads constructor(
     private var path = Path()
     private var paths = Stack<PathData>()
     private var pathDataChangedListener: ((Stack<PathData>) -> Unit)? = null
+
+    private var onDrawListener: ((DrawData) -> Unit)? = null
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -100,11 +103,19 @@ class DrawingView @JvmOverloads constructor(
         paths.clear()
     }
 
+    fun setOnDrawListener(listener: (DrawData) -> Unit) {
+        onDrawListener = listener
+    }
+
     private fun startedTouch(x: Float, y: Float) {
         path.reset()
         path.moveTo(x, y)
         curX = x
         curY = y
+        onDrawListener?.let { draw ->
+            val drawData = createDrawData(x, y, x, y, MotionEvent.ACTION_DOWN)
+            draw(drawData)
+        }
         invalidate()
     }
 
@@ -114,6 +125,10 @@ class DrawingView @JvmOverloads constructor(
         if (dx >= smoothness || dy >= smoothness) {
             isDrawing = true
             path.quadTo(curX!!, curY!!, (curX!! + toX) / 2f, (curY!! + toY) / 2f)
+            onDrawListener?.let { draw ->
+                val drawData = createDrawData(curX!!, curY!!, toX, toY, MotionEvent.ACTION_MOVE)
+                draw(drawData)
+            }
             curX = toX
             curY = toY
             invalidate()
@@ -126,6 +141,10 @@ class DrawingView @JvmOverloads constructor(
         paths.push(PathData(path, paint.color, paint.strokeWidth))
         pathDataChangedListener?.let { change ->
             change(paths)
+        }
+        onDrawListener?.let { draw ->
+            val drawData = createDrawData(curX!!, curY!!, curX!!, curY!!, MotionEvent.ACTION_UP)
+            draw(drawData)
         }
         path = Path()
         invalidate()
