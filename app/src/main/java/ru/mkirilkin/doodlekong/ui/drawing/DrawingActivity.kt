@@ -76,6 +76,12 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.checkRadioButton(checkedId)
         }
+        binding.drawingView.roomName = args.roomName
+        binding.drawingView.setOnDrawListener {
+            if (binding.drawingView.isUserDrawing) {
+                viewModel.sendBaseModel(it)
+            }
+        }
     }
 
     override fun onDestroy() {
