@@ -38,7 +38,7 @@ class RoomsAdapter @Inject constructor() :
         val room = rooms[position]
         holder.binding.apply {
             tvRoomName.text = room.name
-            val playerCount = "${room.playerCount} / ${room.maxPlayers}"
+            val playerCount = "${room.playersCount} / ${room.maxPlayers}"
             tvRoomPersonCount.text = playerCount
 
             root.setOnClickListener {
