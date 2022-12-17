@@ -70,7 +70,6 @@ class UsernameFragment : Fragment(R.layout.fragment_username) {
                             )
                         )
                     }
-                    else -> Unit
                 }
             }
         }

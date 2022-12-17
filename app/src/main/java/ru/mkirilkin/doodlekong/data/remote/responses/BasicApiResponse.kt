@@ -1,6 +1,8 @@
 package ru.mkirilkin.doodlekong.data.remote.responses
 
+import com.google.gson.annotations.SerializedName
+
 data class BasicApiResponse(
-    val successful: Boolean,
-    val message: String? = null
+    @SerializedName("successful") val successful: Boolean,
+    @SerializedName("message") val message: String? = null
 )
