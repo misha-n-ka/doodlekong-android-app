@@ -31,6 +31,7 @@ class DrawingView @JvmOverloads constructor(
     private var curY: Float? = null
     private var smoothness = 5
     private var isDrawing = false
+    private var startedTouch = false
 
     private var paint = Paint(Paint.DITHER_FLAG).apply {
         isDither = true
@@ -86,6 +87,12 @@ class DrawingView @JvmOverloads constructor(
         return true
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        path.reset()
+        invalidate()
+    }
+
     fun setPathDataChangedListener(listener: (Stack<PathData>) -> Unit) {
         pathDataChangedListener = listener
     }
@@ -105,6 +112,55 @@ class DrawingView @JvmOverloads constructor(
 
     fun setOnDrawListener(listener: (DrawData) -> Unit) {
         onDrawListener = listener
+    }
+
+    fun startedTouchExternally(drawData: DrawData) {
+        parseDrawData(drawData).apply {
+            paint.color = color
+            paint.strokeWidth = thickness
+            path.reset()
+            path.moveTo(fromX, fromY)
+            invalidate()
+            startedTouch = true
+        }
+    }
+
+    fun movedTouchExternally(drawData: DrawData) {
+        parseDrawData(drawData).apply {
+            val dx = abs(toX - fromX)
+            val dy = abs(toY - fromY)
+            if (!startedTouch) {
+                startedTouchExternally(drawData)
+            }
+            if (dx >= smoothness || dy >= smoothness) {
+                path.quadTo(fromX, fromY, (fromX + toX) / 2f, (fromY + toY) / 2f)
+                invalidate()
+            }
+        }
+    }
+
+    fun releaseTouchExternally(drawData: DrawData) {
+        parseDrawData(drawData).apply {
+            path.lineTo(fromX, fromY)
+            canvas?.drawPath(path, paint)
+            paths.push(PathData(path, paint.color, paint.strokeWidth))
+            pathDataChangedListener?.let { change ->
+                change(paths)
+            }
+            path = Path()
+            invalidate()
+            startedTouch = false
+        }
+    }
+
+    fun undo() {
+        if (paths.isNotEmpty()) {
+            paths.pop()
+            pathDataChangedListener?.let { change ->
+                change(paths)
+            }
+            invalidate()
+        }
     }
 
     private fun startedTouch(x: Float, y: Float) {
@@ -167,6 +223,15 @@ class DrawingView @JvmOverloads constructor(
             toX = toX / viewWidth!!,
             toY = toY / viewHeight!!,
             motionEvent = motionEvent
+        )
+    }
+
+    private fun parseDrawData(drawData: DrawData): DrawData {
+        return drawData.copy(
+            fromX = drawData.fromX * viewWidth!!,
+            fromY = drawData.fromY * viewHeight!!,
+            toX = drawData.toX * viewWidth!!,
+            toY = drawData.toY * viewHeight!!,
         )
     }
 
