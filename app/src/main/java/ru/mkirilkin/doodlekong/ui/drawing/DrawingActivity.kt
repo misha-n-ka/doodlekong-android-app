@@ -3,6 +3,7 @@ package ru.mkirilkin.doodlekong.ui.drawing
 import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -20,6 +21,7 @@ import com.mkirilkin.doodlekong.databinding.ActivityDrawingBinding
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.GameError
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.JoinRoomHandshake
 import ru.mkirilkin.doodlekong.util.Constants
@@ -72,6 +74,13 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
 
             override fun onDrawerStateChanged(newState: Int) = Unit
         })
+
+        binding.ibUndo.setOnClickListener {
+            if (binding.drawingView.isUserDrawing) {
+                binding.drawingView.undo()
+                viewModel.sendBaseModel(DrawAction(DrawAction.ACTION_UNDO))
+            }
+        }
 
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.checkRadioButton(checkedId)
@@ -164,6 +173,25 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
     private fun listenToSocketEvents() = lifecycleScope.launchWhenStarted {
         viewModel.socketEvent.collect { event ->
             when (event) {
+                is DrawingViewModel.SocketEvent.DrawDataEvent -> {
+                    val drawData = event.data
+                    if (!binding.drawingView.isUserDrawing) {
+                        when (drawData.motionEvent) {
+                            MotionEvent.ACTION_DOWN -> binding.drawingView.startedTouchExternally(
+                                drawData
+                            )
+                            MotionEvent.ACTION_MOVE -> binding.drawingView.movedTouchExternally(
+                                drawData
+                            )
+                            MotionEvent.ACTION_UP -> binding.drawingView.releaseTouchExternally(
+                                drawData
+                            )
+                        }
+                    }
+                }
+                is DrawingViewModel.SocketEvent.UndoEvent -> {
+                    binding.drawingView.undo()
+                }
                 is DrawingViewModel.SocketEvent.GameErrorEvent -> {
                     when (event.data.errorType) {
                         GameError.ERROR_ROOM_NOT_FOUND -> finish()
