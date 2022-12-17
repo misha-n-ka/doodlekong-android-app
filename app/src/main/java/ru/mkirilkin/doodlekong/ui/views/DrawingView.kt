@@ -76,7 +76,8 @@ class DrawingView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (!isEnabled) return false
+        // у Филипа проверка !isEnabled, но с ней нарушается логика. Т.к в isEnabeled не сетится false
+        if (!isUserDrawing) return false
         val newX = event?.x
         val newY = event?.y
         when (event?.action) {
