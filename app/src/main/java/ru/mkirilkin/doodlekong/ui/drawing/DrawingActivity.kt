@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.mkirilkin.doodlekong.R
@@ -21,6 +22,7 @@ import com.mkirilkin.doodlekong.databinding.ActivityDrawingBinding
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.GameError
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.JoinRoomHandshake
@@ -44,6 +46,8 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
 
+    private lateinit var chatMessageAdapter: ChatMessageAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityDrawingBinding.inflate(layoutInflater)
@@ -51,6 +55,8 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         subscribeToUiStateUpdates()
         listenToConnectionEvents()
         listenToSocketEvents()
+        setupRecyclerView()
+
         toggle = ActionBarDrawerToggle(this, binding.root, R.string.open, R.string.close)
         toggle.syncState()
 
@@ -200,5 +206,11 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 else -> Unit
             }
         }
+    }
+
+    private fun setupRecyclerView() = binding.rvChat.apply {
+        chatMessageAdapter = ChatMessageAdapter(args.username)
+        adapter = chatMessageAdapter
+        layoutManager = LinearLayoutManager(this@DrawingActivity)
     }
 }
