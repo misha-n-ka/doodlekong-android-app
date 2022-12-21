@@ -11,6 +11,7 @@ import com.mkirilkin.doodlekong.R
 import com.mkirilkin.doodlekong.databinding.FragmentUsernameBinding
 import dagger.hilt.android.AndroidEntryPoint
 import ru.mkirilkin.doodlekong.util.Constants
+import ru.mkirilkin.doodlekong.util.hideKeyboard
 import ru.mkirilkin.doodlekong.util.navigateSafely
 import ru.mkirilkin.doodlekong.util.snackbar
 
@@ -33,6 +34,7 @@ class UsernameFragment : Fragment(R.layout.fragment_username) {
             viewModel.validateUsernameAndNavigateToSelectRoom(
                 binding.etUsername.text.toString()
             )
+            requireActivity().hideKeyboard(binding.root)
         }
     }
 
