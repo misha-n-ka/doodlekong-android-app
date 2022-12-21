@@ -178,6 +178,32 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 }
             }
         }
+        lifecycleScope.launchWhenStarted {
+            viewModel.newWords.collect {
+                val newWords = it.newWords
+                if (newWords.isEmpty()) {
+                    return@collect
+                }
+                binding.apply {
+                    btnFirstWord.text = newWords[0]
+                    btnSecondWord.text = newWords[1]
+                    btnThirdWord.text = newWords[2]
+
+                    btnFirstWord.setOnClickListener {
+                        viewModel.chooseWord(newWords[0], args.roomName)
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+                    btnSecondWord.setOnClickListener {
+                        viewModel.chooseWord(newWords[1], args.roomName)
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+                    btnThirdWord.setOnClickListener {
+                        viewModel.chooseWord(newWords[2], args.roomName)
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+                }
+            }
+        }
     }
 
     private fun selectColor(color: Int) {
@@ -243,6 +269,10 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 }
                 is DrawingViewModel.SocketEvent.AnnouncementEvent -> {
                     addChatObjectToRecyclerView(event.data)
+                }
+                is DrawingViewModel.SocketEvent.ChosenWordEvent -> {
+                    binding.tvCurWord.text = event.data.chosenWord
+                    binding.ibUndo.isEnabled = false
                 }
                 else -> Unit
             }
