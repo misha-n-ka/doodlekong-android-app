@@ -21,11 +21,11 @@ import com.mkirilkin.doodlekong.R
 import com.mkirilkin.doodlekong.databinding.ActivityDrawingBinding
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
-import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction
-import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.GameError
-import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.JoinRoomHandshake
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.util.Constants
 import javax.inject.Inject
 
@@ -48,6 +48,8 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
 
     private lateinit var chatMessageAdapter: ChatMessageAdapter
 
+    private var updateChatJob: Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityDrawingBinding.inflate(layoutInflater)
@@ -59,6 +61,9 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
 
         toggle = ActionBarDrawerToggle(this, binding.root, R.string.open, R.string.close)
         toggle.syncState()
+
+        chatMessageAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
         val header = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
         rvPlayers = header.findViewById(R.id.rvPlayers)
@@ -88,6 +93,22 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
             }
         }
 
+        binding.ibClearText.setOnClickListener {
+            binding.etMessage.text?.clear()
+        }
+
+        binding.ibSend.setOnClickListener {
+            viewModel.sendChatMessage(
+                ChatMessage(
+                    from = args.username,
+                    roomName = args.roomName,
+                    message = binding.etMessage.text.toString(),
+                    System.currentTimeMillis()
+                )
+            )
+            binding.etMessage.text?.clear()
+        }
+
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.checkRadioButton(checkedId)
         }
@@ -97,6 +118,11 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 viewModel.sendBaseModel(it)
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.rvChat.layoutManager?.onSaveInstanceState()
     }
 
     override fun onDestroy() {
@@ -141,6 +167,13 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         lifecycleScope.launchWhenStarted {
             viewModel.chooseWordOverlayVisible.collect { isVisible ->
                 binding.chooseWordOverlay.isVisible = isVisible
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.chat.collect { chat ->
+                if (chatMessageAdapter.chatObjects.isEmpty()) {
+                    updateChatMessageList(chat)
+                }
             }
         }
     }
@@ -203,6 +236,12 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                         GameError.ERROR_ROOM_NOT_FOUND -> finish()
                     }
                 }
+                is DrawingViewModel.SocketEvent.ChatMessageEvent -> {
+                    addChatObjectToRecyclerView(event.data)
+                }
+                is DrawingViewModel.SocketEvent.AnnouncementEvent -> {
+                    addChatObjectToRecyclerView(event.data)
+                }
                 else -> Unit
             }
         }
@@ -212,5 +251,21 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         chatMessageAdapter = ChatMessageAdapter(args.username)
         adapter = chatMessageAdapter
         layoutManager = LinearLayoutManager(this@DrawingActivity)
+    }
+
+    private fun updateChatMessageList(chat: List<BaseModel>) {
+        updateChatJob?.cancel()
+        updateChatJob = lifecycleScope.launch {
+            chatMessageAdapter.updateDataset(chat)
+        }
+    }
+
+    private suspend fun addChatObjectToRecyclerView(chatObject: BaseModel) {
+        val canScrollDown = binding.rvChat.canScrollVertically(1)
+        updateChatMessageList(chatMessageAdapter.chatObjects + chatObject)
+        updateChatJob?.join()
+        if (!canScrollDown) {
+            binding.rvChat.scrollToPosition(chatMessageAdapter.chatObjects.lastIndex)
+        }
     }
 }
