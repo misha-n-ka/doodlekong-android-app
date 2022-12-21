@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.util.Constants
+import ru.mkirilkin.doodlekong.util.hideKeyboard
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -107,6 +108,7 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 )
             )
             binding.etMessage.text?.clear()
+            hideKeyboard(binding.root)
         }
 
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
