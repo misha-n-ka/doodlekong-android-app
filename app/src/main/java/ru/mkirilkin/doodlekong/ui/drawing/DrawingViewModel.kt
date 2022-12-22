@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.mkirilkin.doodlekong.R
+import com.plcourse.mkirilkin.data.PlayerData
 import com.plcourse.mkirilkin.data.models.messages.Ping
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,6 +49,9 @@ class DrawingViewModel @Inject constructor(
 
     private val _newWords = MutableStateFlow(NewWords(listOf()))
     val newWords: StateFlow<NewWords> = _newWords
+
+    private val _players = MutableStateFlow<List<PlayerData>>(listOf())
+    val players: StateFlow<List<PlayerData>> = _players
 
     private val _chat = MutableStateFlow<List<BaseModel>>(listOf())
     val chat: StateFlow<List<BaseModel>> = _chat
@@ -175,6 +179,9 @@ class DrawingViewModel @Inject constructor(
                     is GameState -> {
                         _gameState.value = data
                         socketEventChannel.send(SocketEvent.GameStateEvent(data))
+                    }
+                    is PlayersList -> {
+                        _players.value = data.players
                     }
                     is GameError -> socketEventChannel.send(SocketEvent.GameErrorEvent(data))
                     is Ping -> sendBaseModel(Ping())

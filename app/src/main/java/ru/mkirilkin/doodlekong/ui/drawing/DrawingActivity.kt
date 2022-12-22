@@ -19,9 +19,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.mkirilkin.doodlekong.R
 import com.mkirilkin.doodlekong.databinding.ActivityDrawingBinding
+import com.plcourse.mkirilkin.data.PlayerData
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
@@ -52,9 +54,10 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
     private lateinit var chatMessageAdapter: ChatMessageAdapter
 
     @Inject
-    private lateinit var playerAdapter: PlayerAdapter
+    lateinit var playerAdapter: PlayerAdapter
 
     private var updateChatJob: Job? = null
+    private var updatePlayersJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -216,6 +219,11 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                         viewModel.setChooseWordOverlayVisible(false)
                     }
                 }
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.players.collect { players ->
+                updatePlayersList(players)
             }
         }
         lifecycleScope.launchWhenStarted {
@@ -393,6 +401,13 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
             tilMessage.isVisible = isVisible
             ibSend.isVisible = isVisible
             ibClearText.isVisible = isVisible
+        }
+    }
+
+    private fun updatePlayersList(players: List<PlayerData>) {
+        updatePlayersJob?.cancel()
+        updatePlayersJob = lifecycleScope.launch {
+            playerAdapter.updateDataset(players)
         }
     }
 }
