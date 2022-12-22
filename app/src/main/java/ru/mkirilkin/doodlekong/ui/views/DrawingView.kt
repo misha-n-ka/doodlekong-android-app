@@ -23,6 +23,8 @@ class DrawingView @JvmOverloads constructor(
             field = value
         }
 
+    var isDrawing = false
+
     private var viewWidth: Int? = null
     private var viewHeight: Int? = null
     private var bitmap: Bitmap? = null
@@ -30,7 +32,6 @@ class DrawingView @JvmOverloads constructor(
     private var curX: Float? = null
     private var curY: Float? = null
     private var smoothness = 5
-    private var isDrawing = false
     private var startedTouch = false
 
     private var paint = Paint(Paint.DITHER_FLAG).apply {
@@ -76,8 +77,7 @@ class DrawingView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        // у Филипа проверка !isEnabled, но с ней нарушается логика. Т.к в isEnabeled не сетится false
-        if (!isUserDrawing) return false
+        if (!isEnabled) return false
         val newX = event?.x
         val newY = event?.y
         when (event?.action) {
@@ -162,6 +162,18 @@ class DrawingView @JvmOverloads constructor(
             }
             invalidate()
         }
+    }
+
+    fun finishOffDrawing() {
+        isDrawing = false
+        path.lineTo(curX ?: return, curY ?: return)
+        canvas?.drawPath(path, paint)
+        paths.push(PathData(path, paint.color, paint.strokeWidth))
+        pathDataChangedListener?.let { change ->
+            change(paths)
+        }
+        path = Path()
+        invalidate()
     }
 
     private fun startedTouch(x: Float, y: Float) {
