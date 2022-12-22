@@ -7,6 +7,7 @@ import com.mkirilkin.doodlekong.R
 import com.plcourse.mkirilkin.data.models.messages.Ping
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +15,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.data.remote.websocket.DrawingApi
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction.Companion.ACTION_UNDO
+import ru.mkirilkin.doodlekong.util.CoroutineTimer
 import ru.mkirilkin.doodlekong.util.DispatcherProvider
 import javax.inject.Inject
 
@@ -47,6 +50,12 @@ class DrawingViewModel @Inject constructor(
     private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
+    private val _phase = MutableStateFlow(PhaseChange(null, 0L, null))
+    val phase: StateFlow<PhaseChange> = _phase
+
+    private val _phaseTime = MutableStateFlow(0L)
+    val phaseTime: StateFlow<Long> = _phaseTime
+
     private val _connectionProgressBarVisible = MutableStateFlow(true)
     val connectionProgressBarVisible: StateFlow<Boolean> = _connectionProgressBarVisible
 
@@ -58,6 +67,10 @@ class DrawingViewModel @Inject constructor(
 
     private val socketEventChannel = Channel<SocketEvent>()
     val socketEvent = socketEventChannel.receiveAsFlow().flowOn(dispatchers.io)
+
+    private val timer = CoroutineTimer()
+    private var timerJob: Job? = null
+
 
     init {
         observeBaseModels()
@@ -96,6 +109,17 @@ class DrawingViewModel @Inject constructor(
         _connectionProgressBarVisible.value = isVisible
     }
 
+    fun cancelTimer() {
+        timerJob?.cancel()
+    }
+
+    private fun setTimer(duration: Long) {
+        timerJob?.cancel()
+        timerJob = timer.timeAndEmit(duration, viewModelScope) {
+            _phaseTime.value = it
+        }
+    }
+
     private fun observeEvents() {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.observeEvents().collect { event ->
@@ -125,6 +149,15 @@ class DrawingViewModel @Inject constructor(
                     is NewWords -> {
                         _newWords.value = data
                         socketEventChannel.send(SocketEvent.NewWordsEvent(data))
+                    }
+                    is PhaseChange -> {
+                        data.phase?.let {
+                            _phase.value = data
+                        }
+                        _phaseTime.value =  data.time
+                        if (data.phase != Room.Phase.WAITING_FOR_PLAYERS) {
+                            setTimer(data.time)
+                        }
                     }
                     is ChosenWord -> socketEventChannel.send(SocketEvent.ChosenWordEvent(data))
                     is GameError -> socketEventChannel.send(SocketEvent.GameErrorEvent(data))

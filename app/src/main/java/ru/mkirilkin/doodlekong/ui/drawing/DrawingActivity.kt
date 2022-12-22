@@ -25,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.util.Constants
 import ru.mkirilkin.doodlekong.util.hideKeyboard
@@ -201,6 +202,58 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                         viewModel.chooseWord(newWords[2], args.roomName)
                         viewModel.setChooseWordOverlayVisible(false)
                     }
+                }
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.phaseTime.collect { time ->
+                binding.roundTimerProgressBar.progress = time.toInt()
+                binding.tvRemainingTimeChooseWord.text = (time / 1_000L).toString()
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.phase.collect { phase ->
+                when (phase.phase) {
+                    Room.Phase.WAITING_FOR_PLAYERS -> {
+                        binding.tvCurWord.text = getString(R.string.waiting_for_players)
+                        viewModel.cancelTimer()
+                        viewModel.setConnectionProgressBarVisible(false)
+                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
+                    }
+                    Room.Phase.WAITING_FOR_START -> {
+                        binding.roundTimerProgressBar.max = phase.time.toInt()
+                        binding.tvCurWord.text = getString(R.string.waiting_for_start)
+                    }
+                    Room.Phase.NEW_ROUND -> {
+                        phase.drawingPlayer?.let { player ->
+                            binding.tvCurWord.text =
+                                getString(R.string.player_is_drawing, phase.drawingPlayer)
+                        }
+                        binding.apply {
+                            drawingView.isEnabled = false
+                            drawingView.setColor(Color.BLACK)
+                            drawingView.setThickness(Constants.DEFAULT_PAINT_THICKNESS)
+                            roundTimerProgressBar.max = phase.time.toInt()
+                            val isUserDrawingPlayer = phase.drawingPlayer == args.username
+                            binding.chooseWordOverlay.isVisible = isUserDrawingPlayer
+                        }
+                    }
+                    Room.Phase.GAME_RUNNING -> {
+                        binding.chooseWordOverlay.isVisible = false
+                        binding.roundTimerProgressBar.max = phase.time.toInt()
+                    }
+                    Room.Phase.SHOW_WORD -> {
+                        binding.apply {
+                            if (drawingView.isDrawing) {
+                                drawingView.finishOffDrawing()
+                            }
+                            drawingView.isEnabled = false
+                            drawingView.setColor(Color.BLACK)
+                            drawingView.setThickness(Constants.DEFAULT_PAINT_THICKNESS)
+                            roundTimerProgressBar.max = phase.time.toInt()
+                        }
+                    }
+                    null -> Unit
                 }
             }
         }
