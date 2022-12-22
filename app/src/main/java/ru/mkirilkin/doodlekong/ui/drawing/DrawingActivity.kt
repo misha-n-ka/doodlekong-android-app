@@ -25,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
+import ru.mkirilkin.doodlekong.adapters.PlayerAdapter
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.util.Constants
@@ -50,6 +51,9 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
 
     private lateinit var chatMessageAdapter: ChatMessageAdapter
 
+    @Inject
+    private lateinit var playerAdapter: PlayerAdapter
+
     private var updateChatJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,6 +74,11 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         val header = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
         rvPlayers = header.findViewById(R.id.rvPlayers)
         binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+        rvPlayers.apply {
+            adapter = playerAdapter
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+        }
 
         binding.ibPlayers.setOnClickListener {
             binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
