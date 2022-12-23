@@ -83,6 +83,9 @@ class DrawingViewModel @Inject constructor(
     private val socketEventChannel = Channel<SocketEvent>()
     val socketEvent = socketEventChannel.receiveAsFlow().flowOn(dispatchers.io)
 
+    private val _speechToTextEnabled = MutableStateFlow(false)
+    val speechToTextEnabled: StateFlow<Boolean> = _speechToTextEnabled
+
     private val timer = CoroutineTimer()
     private var timerJob: Job? = null
 
@@ -122,6 +125,14 @@ class DrawingViewModel @Inject constructor(
 
     fun setConnectionProgressBarVisible(isVisible: Boolean) {
         _connectionProgressBarVisible.value = isVisible
+    }
+
+    fun startListening() {
+        _speechToTextEnabled.value = true
+    }
+
+    fun stopListening() {
+        _speechToTextEnabled.value = false
     }
 
     fun cancelTimer() {
@@ -194,7 +205,7 @@ class DrawingViewModel @Inject constructor(
                         val drawActions = mutableListOf<BaseModel>()
                         data.data.forEach { drawAction ->
                             val jsonObject = JsonParser.parseString(drawAction).asJsonObject
-                            val type = when(jsonObject.get("type").asString) {
+                            val type = when (jsonObject.get("type").asString) {
                                 TYPE_DRAW_DATA -> DrawData::class.java
                                 TYPE_DRAW_ACTION -> DrawAction::class.java
                                 else -> BaseModel::class.java
