@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +30,7 @@ import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
 import ru.mkirilkin.doodlekong.adapters.PlayerAdapter
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
+import ru.mkirilkin.doodlekong.ui.dialogs.LeaveDialog
 import ru.mkirilkin.doodlekong.util.Constants
 import ru.mkirilkin.doodlekong.util.hideKeyboard
 import javax.inject.Inject
@@ -136,6 +138,15 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing), LifecycleE
             if (binding.drawingView.isUserDrawing) {
                 viewModel.sendBaseModel(it)
             }
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            LeaveDialog().apply {
+                setOnPositiveClickListener {
+                    viewModel.disconnect()
+                    finish()
+                }
+            }.show(supportFragmentManager, null)
         }
     }
 
