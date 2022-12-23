@@ -132,6 +132,10 @@ class DrawingViewModel @Inject constructor(
         _pathData.value = stack
     }
 
+    fun disconnect() {
+        sendBaseModel(DisconnectRequest())
+    }
+
     private fun setTimer(duration: Long) {
         timerJob?.cancel()
         timerJob = timer.timeAndEmit(duration, viewModelScope) {
