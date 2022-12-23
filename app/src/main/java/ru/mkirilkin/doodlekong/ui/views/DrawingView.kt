@@ -186,6 +186,10 @@ class DrawingView @JvmOverloads constructor(
         }
     }
 
+    fun setPaths(pathData: Stack<PathData>) {
+        this.paths = pathData
+    }
+
     fun finishOffDrawing() {
         isDrawing = false
         path.lineTo(curX ?: return, curY ?: return)
