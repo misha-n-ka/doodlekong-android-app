@@ -374,6 +374,7 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing), LifecycleE
                     setColorGroupVisibility(isUserDrawing)
                     setMessageInputVisibility(!isUserDrawing)
                     drawingView.isUserDrawing = isUserDrawing
+                    ibUndo.isEnabled = isUserDrawing
                     ibMic.isVisible = !isUserDrawing
                     drawingView.isEnabled = isUserDrawing
                 }
