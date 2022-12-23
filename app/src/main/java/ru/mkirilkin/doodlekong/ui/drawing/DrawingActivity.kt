@@ -325,6 +325,11 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing), LifecycleE
             }
         }
         lifecycleScope.launchWhenStarted {
+            viewModel.pathData.collect { pathData ->
+                binding.drawingView.setPaths(pathData)
+            }
+        }
+        lifecycleScope.launchWhenStarted {
             viewModel.newWords.collect {
                 val newWords = it.newWords
                 if (newWords.isEmpty()) {
