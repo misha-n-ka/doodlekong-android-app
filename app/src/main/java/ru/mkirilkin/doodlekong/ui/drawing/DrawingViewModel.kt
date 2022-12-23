@@ -3,6 +3,7 @@ package ru.mkirilkin.doodlekong.ui.drawing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.mkirilkin.doodlekong.R
 import com.plcourse.mkirilkin.data.PlayerData
 import com.plcourse.mkirilkin.data.models.messages.Ping
@@ -20,6 +21,8 @@ import ru.mkirilkin.doodlekong.data.remote.websocket.models.Room
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.*
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction.Companion.ACTION_UNDO
 import ru.mkirilkin.doodlekong.ui.views.DrawingView
+import ru.mkirilkin.doodlekong.util.Constants.TYPE_DRAW_ACTION
+import ru.mkirilkin.doodlekong.util.Constants.TYPE_DRAW_DATA
 import ru.mkirilkin.doodlekong.util.CoroutineTimer
 import ru.mkirilkin.doodlekong.util.DispatcherProvider
 import java.util.*
@@ -40,7 +43,7 @@ class DrawingViewModel @Inject constructor(
         data class NewWordsEvent(val data: NewWords) : SocketEvent()
         data class ChosenWordEvent(val data: ChosenWord) : SocketEvent()
         data class GameErrorEvent(val data: GameError) : SocketEvent()
-        data class RoundDrawInfoEvent(val data: RoundDrawInfo) : SocketEvent()
+        data class RoundDrawInfoEvent(val data: List<BaseModel>) : SocketEvent()
         object UndoEvent : SocketEvent()
     }
 
@@ -129,6 +132,10 @@ class DrawingViewModel @Inject constructor(
         _pathData.value = stack
     }
 
+    fun disconnect() {
+        sendBaseModel(DisconnectRequest())
+    }
+
     private fun setTimer(duration: Long) {
         timerJob?.cancel()
         timerJob = timer.timeAndEmit(duration, viewModelScope) {
@@ -182,6 +189,19 @@ class DrawingViewModel @Inject constructor(
                     }
                     is PlayersList -> {
                         _players.value = data.players
+                    }
+                    is RoundDrawInfo -> {
+                        val drawActions = mutableListOf<BaseModel>()
+                        data.data.forEach { drawAction ->
+                            val jsonObject = JsonParser.parseString(drawAction).asJsonObject
+                            val type = when(jsonObject.get("type").asString) {
+                                TYPE_DRAW_DATA -> DrawData::class.java
+                                TYPE_DRAW_ACTION -> DrawAction::class.java
+                                else -> BaseModel::class.java
+                            }
+                            drawActions.add(gson.fromJson(drawAction, type))
+                        }
+                        socketEventChannel.send(SocketEvent.RoundDrawInfoEvent(drawActions))
                     }
                     is GameError -> socketEventChannel.send(SocketEvent.GameErrorEvent(data))
                     is Ping -> sendBaseModel(Ping())

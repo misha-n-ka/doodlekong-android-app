@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.navigation.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,7 +23,6 @@ import com.plcourse.mkirilkin.data.PlayerData
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
@@ -35,7 +34,7 @@ import ru.mkirilkin.doodlekong.util.hideKeyboard
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
+class DrawingActivity : AppCompatActivity(R.layout.activity_drawing), LifecycleEventObserver {
 
     @Inject
     lateinit var clientId: String
@@ -63,6 +62,7 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
         super.onCreate(savedInstanceState)
         _binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         subscribeToUiStateUpdates()
         listenToConnectionEvents()
         listenToSocketEvents()
@@ -147,6 +147,17 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
     override fun onDestroy() {
         _binding = null
         super.onDestroy()
+    }
+
+    /**
+     * Не используется override onStop, потому что при вызове разрешения на использование микро,
+     * у активити вызывается колбэк onStop и был бы дисконнект, а это не нужно.
+     * onStateChanged не вызывает onStop при вызове диалога разрешения на использование микро
+     */
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        if (event == Lifecycle.Event.ON_STOP) {
+            viewModel.disconnect()
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -363,6 +374,9 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 }
                 is DrawingViewModel.SocketEvent.GameStateEvent -> {
                     binding.drawingView.clear()
+                }
+                is DrawingViewModel.SocketEvent.RoundDrawInfoEvent -> {
+                    binding.drawingView.update(event.data)
                 }
                 else -> Unit
             }

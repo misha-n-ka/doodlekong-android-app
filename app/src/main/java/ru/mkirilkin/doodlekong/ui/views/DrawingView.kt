@@ -5,6 +5,9 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.BaseModel
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction
+import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawAction.Companion.ACTION_UNDO
 import ru.mkirilkin.doodlekong.data.remote.websocket.models.messages.DrawData
 import ru.mkirilkin.doodlekong.util.Constants
 import java.util.*
@@ -161,6 +164,25 @@ class DrawingView @JvmOverloads constructor(
                 change(paths)
             }
             invalidate()
+        }
+    }
+
+    fun update(drawActions: List<BaseModel>) {
+        drawActions.forEach { drawAction ->
+            when (drawAction) {
+                is DrawData -> {
+                    when (drawAction.motionEvent) {
+                        MotionEvent.ACTION_DOWN -> startedTouchExternally(drawAction)
+                        MotionEvent.ACTION_MOVE -> movedTouchExternally(drawAction)
+                        MotionEvent.ACTION_UP -> releaseTouchExternally(drawAction)
+                    }
+                }
+                is DrawAction -> {
+                    when (drawAction.action) {
+                        ACTION_UNDO -> undo()
+                    }
+                }
+            }
         }
     }
 
