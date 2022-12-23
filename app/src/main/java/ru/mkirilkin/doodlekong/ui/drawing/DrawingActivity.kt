@@ -23,7 +23,6 @@ import com.plcourse.mkirilkin.data.PlayerData
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.mkirilkin.doodlekong.adapters.ChatMessageAdapter
@@ -363,6 +362,9 @@ class DrawingActivity : AppCompatActivity(R.layout.activity_drawing) {
                 }
                 is DrawingViewModel.SocketEvent.GameStateEvent -> {
                     binding.drawingView.clear()
+                }
+                is DrawingViewModel.SocketEvent.RoundDrawInfoEvent -> {
+                    binding.drawingView.update(event.data)
                 }
                 else -> Unit
             }
