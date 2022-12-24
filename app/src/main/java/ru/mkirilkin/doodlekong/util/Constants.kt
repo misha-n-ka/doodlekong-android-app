@@ -5,10 +5,10 @@ object Constants {
     const val USE_LOCALHOST = true
 
     const val HTTP_BASE_URL = ""
-    const val HTTP_BASE_URL_LOCALHOST = "http://192.168.1.35:8001/"
+    const val HTTP_BASE_URL_LOCALHOST = "http://0.0.0.1:8001/"
 
     const val WEBSOCKET_BASE_URL = ""
-    const val WEBSOCKET_BASE_URL_LOCALHOST = "http://192.168.1.35:8001/ws/draw"
+    const val WEBSOCKET_BASE_URL_LOCALHOST = "http://0.0.0.1:8001/ws/draw"
 
     const val MIN_USERNAME_LENGTH = 4
     const val MAX_USERNAME_LENGTH = 12
